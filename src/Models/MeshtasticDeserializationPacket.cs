@@ -1,26 +1,26 @@
 ﻿using ProtoBuf;
 
-namespace ProtobufTests;
+namespace ProtobufTests.Models;
 
 [ProtoContract]
 public class MeshtasticDeserializationPacket 
 {
     [ProtoMember(1)]
-    public MeshtasticPacketFour SubPacket { get; set; }
+    public MeshtasticPacketFour? SubPacket { get; set; }
 }
 
 [ProtoContract]
 public class MeshtasticPacketFour 
 {
     [ProtoMember(4)]
-    public MeshtasticPacketTwo SubPacket { get; set; }
+    public MeshtasticPacketTwo? SubPacket { get; set; }
 }
 
 [ProtoContract]
 public class MeshtasticPacketTwo 
 {
     [ProtoMember(2)]
-    public MeshtasticGpsLocationPacket GpsInfo { get; set; }
+    public MeshtasticGpsLocationPacket? GpsInfo { get; set; }
 }
  
 [ProtoContract]
