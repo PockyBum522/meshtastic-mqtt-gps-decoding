@@ -1,30 +1,33 @@
 ﻿using ProtoBuf;
 
-namespace ProtobufTests.Models;
+namespace ProtobufTests.Models.MeshtasticDeserialization;
 
 [ProtoContract]
-public class MeshtasticDeserializationPacket 
+public class FirstMeshtasticDeserializationPacket 
 {
     [ProtoMember(1)]
-    public MeshtasticPacketFour? SubPacket { get; set; }
+    public FirstMeshtasticPacketFour? SubPacket { get; set; }
 }
 
 [ProtoContract]
-public class MeshtasticPacketFour 
+public class FirstMeshtasticPacketFour 
 {
+    [ProtoMember(1)]
+    public uint NodeIdDecimal { get; set; } 
+    
     [ProtoMember(4)]
-    public MeshtasticPacketTwo? SubPacket { get; set; }
+    public FirstMeshtasticPacketTwo? SubPacket { get; set; }
 }
 
 [ProtoContract]
-public class MeshtasticPacketTwo 
+public class FirstMeshtasticPacketTwo 
 {
     [ProtoMember(2)]
-    public MeshtasticGpsLocationPacket? GpsInfo { get; set; }
+    public FirstMeshtasticGpsLocationPacket? GpsInfo { get; set; }
 }
  
 [ProtoContract]
-public class MeshtasticGpsLocationPacket 
+public class FirstMeshtasticGpsLocationPacket 
 {
     [ProtoMember(1)]
     public int Latitude { get; set; }
@@ -34,9 +37,6 @@ public class MeshtasticGpsLocationPacket
     
     [ProtoMember(3)]
     public int AltitudeMetersAboveSeaLevel { get; set; }
-
-    [ProtoMember(4)]
-    public int Time { get; set; }
 
     /// <summary>
     /// The number of bits of precision for the location information from the sending node

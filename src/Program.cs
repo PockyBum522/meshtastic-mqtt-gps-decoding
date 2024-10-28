@@ -5,12 +5,12 @@ using ProtobufTests.Models;
 namespace ProtobufTests;
 
 // You can use https://protobuf-decoder.netlify.app/ to decode a protobuf's structure, then set up classes for
-//      deserialization. Those classes are in MeshtasticDeserializationPacket.cs
+//      deserialization. Those classes are in FirstMeshtasticDeserializationPacket.cs
 
 static class Program
 {
-    private static bool DebugMessages => true;
-    private static MqttServerSelectionEnum ServerSelection => MqttServerSelectionEnum.Pocky;
+    private static bool DebugMessages => false;
+    private static MqttServerSelectionEnum ServerSelection => MqttServerSelectionEnum.MeshtasticOfficial;
     
     static async Task Main(string[] args)
     {
@@ -38,7 +38,7 @@ static class Program
         else if (ServerSelection == MqttServerSelectionEnum.MeshtasticOfficial)
         {
             mqttClientOptions = new MqttClientOptionsBuilder()
-                .WithClientId("mesh_protobuf_test_01")
+                .WithClientId("mesh_protobuf_test_02")
                 .WithTcpServer("mqtt.meshtastic.org", 1883)
                 .WithCredentials(SECRETS.MqttUsernameOfficial, SECRETS.MqttPasswordOfficial);
             
@@ -92,24 +92,46 @@ static class Program
             Console.WriteLine($"[DEBUG - RAW MQTT] New message on: {e.ApplicationMessage.Topic}");
             Console.WriteLine($"[DEBUG - RAW MQTT] New message payload: {messageAscii}");
         }
-        
-        
-        if (rawPayload.Array == null) throw new NullReferenceException();
-        
-        var gpsInfo = new GpsInfo(rawPayload.Array, DebugMessages);
 
-        // Bounding box for Florida
-        if (gpsInfo.Latitude > 31.1m) return Task.CompletedTask;
-        if (gpsInfo.Latitude < 24.4m) return Task.CompletedTask;
-        if (gpsInfo.Longitude < -87.7m) return Task.CompletedTask;
-        if (gpsInfo.Longitude > -80.0m) return Task.CompletedTask;
+        if (rawPayload.Array == null)
+        {
+            throw new NullReferenceException();
+            
+            //return Task.CompletedTask;
+        }
         
-        Console.WriteLine();
-        Console.WriteLine($"[{DateTimeOffset.Now.ToString("G")}] New GPS info in FL bounding box: ");
-        Console.WriteLine($"{gpsInfo.Latitude}, {gpsInfo.Longitude}");
-        Console.WriteLine($"DOP Bits: {gpsInfo.PrecisionBits}");
+        var gpsInfo = new GpsInfo();
+
+        if (!LocationChecks.CoordinatesAreInFlorida(gpsInfo)) return Task.CompletedTask;
+
+        // _seenNodes.RemoveAll(x => x.NodeId == gpsInfo.NodeId);
+        //
+        // Console.WriteLine($"Adding: {gpsInfo.NodeId}, {gpsInfo.Latitude}, {gpsInfo.Longitude}, {gpsInfo.PrecisionBits}");
+        //
+        // _seenNodes.Add(gpsInfo);
+        //
+        // PrintAllNodes(_seenNodes);
 
         return Task.CompletedTask;
+    }
+    
+    private static void PrintAllNodes(List<GpsInfo> seenNodes)
+    {
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine("Seen nodes list:");
+        
+        seenNodes = seenNodes.OrderBy(x => x.PrecisionBits).ToList();
+        
+        foreach (var seenNode in seenNodes)
+        {
+            Console.WriteLine($"{seenNode.NodeId}, {seenNode.Latitude}, {seenNode.Longitude}, {seenNode.PrecisionBits}");
+        }
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine();
+
     }
 }
 
@@ -119,31 +141,3 @@ internal enum MqttServerSelectionEnum
     Pocky,
     MeshtasticOfficial
 }
-
-
-// static void SerializingExample()
-// {
-//     var protoObject = new ProtobufTestClass()
-//     {
-//         CallSign = "XABX",
-//         Latitude = 28.1234f,
-//         Longitude = -81.4321f
-//     };
-//     
-//     var serBytes = ProtoSerialize(protoObject);
-//     
-//     File.WriteAllBytes("/home/david/Desktop/protobuftest.proto", serBytes);
-//     
-//     foreach (var serByte in serBytes)
-//     {
-//         Console.Write(serByte);
-//         Console.Write(" ");
-//     }
-// }
-//
-// private static byte[] ProtoSerialize<T>(T record) where T : class
-// {
-//     using var stream = new MemoryStream();
-//     Serializer.Serialize(stream, record);
-//     return stream.ToArray();
-// }
